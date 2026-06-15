@@ -71,7 +71,7 @@
     "ts-node": "10.9.1",
     "tsd": "0.29.0",
     "typescript": "5.1.6",
-    "xo": "0.39.1"
+    "xo": "^2.0.2"
   },
   "ava": {
     "extensions": [
@@ -96,37 +96,6 @@
         ],
         "options": {
           "useTabs": false
-        }
-      }
-    ]
-  },
-  "xo": {
-    "prettier": true,
-    "ignores": [
-      "src/test/mathjax"
-    ],
-    "rules": {
-      "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/no-confusing-void-expression": "off",
-      "@typescript-eslint/no-implicit-any-catch": "off",
-      "@typescript-eslint/no-var-requires": "off",
-      "@typescript-eslint/prefer-readonly-parameter-types": "off",
-      "camelcase": "off",
-      "capitalized-comments": "off",
-      "no-await-in-loop": "off",
-      "no-promise-executor-return": "off",
-      "no-redeclare": "off",
-      "node/no-unsupported-features/es-syntax": "off",
-      "unicorn/no-array-callback-reference": "off",
-      "unicorn/no-fn-reference-in-iterator": "off",
-      "unicorn/string-content": "off"
-    },
-    "overrides": [
-      {
-        "files": "**/*.spec.ts",
-        "rules": {
-          "@typescript-eslint/no-non-null-assertion": "off",
-          "@typescript-eslint/no-unsafe-argument": "off"
         }
       }
     ]

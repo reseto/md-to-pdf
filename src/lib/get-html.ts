@@ -1,4 +1,4 @@
-import { Config } from './config';
+import { type Config } from './config';
 import { getMarked } from './get-marked-with-highlighter';
 
 /**

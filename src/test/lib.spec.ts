@@ -1,7 +1,7 @@
 import test from 'ava';
 import { Renderer } from 'marked';
-import { EOL } from 'os';
-import { posix, resolve, sep } from 'path';
+import { EOL } from 'node:os';
+import { posix, resolve, sep } from 'node:path';
 import { defaultConfig } from '../lib/config';
 import { getHtml } from '../lib/get-html';
 import { getMarked } from '../lib/get-marked-with-highlighter';
@@ -46,25 +46,25 @@ test('getMarginObject should be able to handle all valid CSS margin inputs', (t)
 // get-html
 
 test('getHtml should return a valid html document', (t) => {
-	const html = getHtml('', defaultConfig).replace(/\n/g, '');
+	const html = getHtml('', defaultConfig).replaceAll('\n', '');
 
 	t.regex(html, /<!DOCTYPE html>.*<html>.*<head>.*<body class="">.*<\/body>.*<\/html>/);
 });
 
 test('getHtml should inject rendered markdown', (t) => {
-	const html = getHtml('# Foo', defaultConfig).replace(/\n/g, '');
+	const html = getHtml('# Foo', defaultConfig).replaceAll('\n', '');
 
 	t.regex(html, /<body class="">\s*<h1 id="foo">Foo<\/h1>\s*<\/body>/);
 });
 
 test('getHtml should inject body classes', (t) => {
-	const html = getHtml('', { ...defaultConfig, body_class: ['foo', 'bar'] }).replace(/\n/g, '');
+	const html = getHtml('', { ...defaultConfig, body_class: ['foo', 'bar'] }).replaceAll('\n', '');
 
 	t.regex(html, /<body class="foo bar">/);
 });
 
 test('getHtml should have the title set', (t) => {
-	const html = getHtml('', { ...defaultConfig, document_title: 'Foo' }).replace(/\n/g, '');
+	const html = getHtml('', { ...defaultConfig, document_title: 'Foo' }).replaceAll('\n', '');
 
 	t.regex(html, /<title>Foo<\/title>/);
 });
@@ -89,7 +89,6 @@ test('getMarked should highlight unknown code as plaintext', (t) => {
 test('getMarked should accept a custom renderer', (t) => {
 	const renderer = new Renderer();
 
-	// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 	renderer.link = (href, _, text) => `<a class="custom" href="${href}">${text}</a>`;
 
 	const marked = getMarked({ renderer }, []);
@@ -134,30 +133,30 @@ test('readFile should return the content of a file', async (t) => {
 // is-md-file
 
 test('isMdFile should return true if the file extension indicates a markdown file', (t) => {
-	t.is(isMdFile('md.txt'), false);
-	t.is(isMdFile('.md.txt'), true);
-	t.is(isMdFile('test.txt'), false);
-	t.is(isMdFile('test.md'), true);
-	t.is(isMdFile('test.md.notmd'), false);
-	t.is(isMdFile('test.md.txt'), true);
-	t.is(isMdFile('test.mkd'), true);
-	t.is(isMdFile('test.mkd.txt'), true);
-	t.is(isMdFile('test.mdown'), true);
-	t.is(isMdFile('test.mdown.txt'), true);
-	t.is(isMdFile('test.markdown'), true);
-	t.is(isMdFile('test.markdown.txt'), true);
+	t.false(isMdFile('md.txt'));
+	t.true(isMdFile('.md.txt'));
+	t.false(isMdFile('test.txt'));
+	t.true(isMdFile('test.md'));
+	t.false(isMdFile('test.md.notmd'));
+	t.true(isMdFile('test.md.txt'));
+	t.true(isMdFile('test.mkd'));
+	t.true(isMdFile('test.mkd.txt'));
+	t.true(isMdFile('test.mdown'));
+	t.true(isMdFile('test.mdown.txt'));
+	t.true(isMdFile('test.markdown'));
+	t.true(isMdFile('test.markdown.txt'));
 });
 
 // --
 // is-url
 
 test('isUrl should return true for strings that are valid http(s) urls', (t) => {
-	t.is(isHttpUrl('foo'), false);
-	t.is(isHttpUrl('foo/bar'), false);
-	t.is(isHttpUrl('/foo/bar'), false);
-	t.is(isHttpUrl('http/foo/bar'), false);
-	t.is(isHttpUrl('http://foo/bar'), true);
-	t.is(isHttpUrl('foo://bar'), false);
-	t.is(isHttpUrl('file:///foobar'), false);
-	t.is(isHttpUrl('C:\\foo\\bar'), false);
+	t.false(isHttpUrl('foo'));
+	t.false(isHttpUrl('foo/bar'));
+	t.false(isHttpUrl('/foo/bar'));
+	t.false(isHttpUrl('http/foo/bar'));
+	t.true(isHttpUrl('http://foo/bar'));
+	t.false(isHttpUrl('foo://bar'));
+	t.false(isHttpUrl('file:///foobar'));
+	t.false(isHttpUrl(String.raw`C:\foo\bar`));
 });

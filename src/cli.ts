@@ -5,13 +5,13 @@
 
 import arg from 'arg';
 import chalk from 'chalk';
-import { watch, WatchOptions } from 'chokidar';
+import { watch, type WatchOptions } from 'chokidar';
 import getPort from 'get-port';
 import getStdin from 'get-stdin';
 import Listr from 'listr';
-import path from 'path';
-import { PackageJson } from '.';
-import { Config, defaultConfig } from './lib/config';
+import path from 'node:path';
+import { type PackageJson } from '.';
+import { defaultConfig, type Config } from './lib/config';
 import { closeBrowser } from './lib/generate-output';
 import { help } from './lib/help';
 import { convertMdToPdf } from './lib/md-to-pdf';

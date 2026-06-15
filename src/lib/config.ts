@@ -1,8 +1,8 @@
-import { WatchOptions } from 'chokidar';
-import { GrayMatterOption } from 'gray-matter';
-import { marked } from 'marked';
-import { resolve } from 'path';
-import { FrameAddScriptTagOptions, launch, PDFOptions } from 'puppeteer';
+import { type WatchOptions } from 'chokidar';
+import { type GrayMatterOption } from 'gray-matter';
+import { type marked } from 'marked';
+import { resolve } from 'node:path';
+import { type FrameAddScriptTagOptions, type launch, type PDFOptions } from 'puppeteer';
 
 export const defaultConfig: Config = {
 	basedir: process.cwd(),
@@ -45,21 +45,21 @@ export const defaultConfig: Config = {
  */
 export type Config = PdfConfig | HtmlConfig;
 
-export interface PdfConfig extends BasicConfig {
+export type PdfConfig = {
 	/**
 	 * If true, generate HTML output instead of PDF output. Default: `false`.
 	 */
 	as_html?: false;
-}
+} & BasicConfig;
 
-export interface HtmlConfig extends BasicConfig {
+export type HtmlConfig = {
 	/**
 	 * If true, generate HTML output instead of PDF output. Default: `false`.
 	 */
 	as_html: true;
-}
+} & BasicConfig;
 
-interface BasicConfig {
+type BasicConfig = {
 	/**
 	 * Base directory to be served by the file server.
 	 */
@@ -173,6 +173,6 @@ interface BasicConfig {
 	 * @see https://marked.js.org/using_pro#extensions
 	 */
 	marked_extensions: marked.MarkedExtension[];
-}
+};
 
 export type PuppeteerLaunchOptions = Parameters<typeof launch>[0];

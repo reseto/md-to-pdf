@@ -1,21 +1,21 @@
-import { join, posix, sep } from 'path';
-import puppeteer, { Browser } from 'puppeteer';
-import { Config, HtmlConfig, PdfConfig } from './config';
+import { join, posix, sep } from 'node:path';
+import puppeteer, { type Browser } from 'puppeteer';
+import { type Config, type HtmlConfig, type PdfConfig } from './config';
 import { isHttpUrl } from './is-http-url';
 
 export type Output = PdfOutput | HtmlOutput;
 
-export interface PdfOutput extends BasicOutput {
+export type PdfOutput = {
 	content: Buffer;
-}
+} & BasicOutput;
 
-export interface HtmlOutput extends BasicOutput {
+export type HtmlOutput = {
 	content: string;
-}
+} & BasicOutput;
 
-interface BasicOutput {
+type BasicOutput = {
 	filename: string | undefined;
-}
+};
 
 /**
  * Store a single browser instance reference so that we can re-use it.
@@ -59,9 +59,7 @@ export async function generateOutput(
 			return browserRef;
 		}
 
-		if (!browserPromise) {
-			browserPromise = puppeteer.launch({ devtools: config.devtools, ...config.launch_options });
-		}
+		browserPromise ||= puppeteer.launch({ devtools: config.devtools, ...config.launch_options });
 
 		return browserPromise;
 	}
@@ -72,7 +70,6 @@ export async function generateOutput(
 
 	const urlPathname = join(relativePath, 'index.html').split(sep).join(posix.sep);
 
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	await page.goto(`http://localhost:${config.port!}/${urlPathname}`); // make sure relative paths work as expected
 	await page.setContent(html); // overwrite the page content with what was generated from the markdown
 

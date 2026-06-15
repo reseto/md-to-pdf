@@ -1,8 +1,8 @@
 import test, { before } from 'ava';
-import { readFileSync, unlinkSync } from 'fs';
-import { basename, resolve } from 'path';
+import { readFileSync, unlinkSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf';
-import { TextItem } from 'pdfjs-dist/types/src/display/api';
+import { type TextItem } from 'pdfjs-dist/types/src/display/api';
 import { mdToPdf } from '..';
 
 const getPdfTextContent = async (content: Buffer) => {

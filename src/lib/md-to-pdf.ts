@@ -1,8 +1,8 @@
-import { promises as fs } from 'fs';
 import grayMatter from 'gray-matter';
-import { dirname, relative, resolve } from 'path';
-import { Browser } from 'puppeteer';
-import { Config } from './config';
+import { promises as fs } from 'node:fs';
+import { dirname, relative, resolve } from 'node:path';
+import { type Browser } from 'puppeteer';
+import { type Config } from './config';
 import { generateOutput } from './generate-output';
 import { getHtml } from './get-html';
 import { getOutputFilePath } from './get-output-file-path';
@@ -66,7 +66,7 @@ export const convertMdToPdf = async (
 	// merge cli args into config
 	for (const arg of Object.entries(args)) {
 		const [argKey, argValue] = arg as [string, string];
-		const key = argKey.slice(2).replace(/-/g, '_');
+		const key = argKey.slice(2).replaceAll('-', '_');
 
 		(config as Record<string, any>)[key] = jsonArgs.has(argKey) ? JSON.parse(argValue) : argValue;
 	}

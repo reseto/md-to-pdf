@@ -1,5 +1,5 @@
-import { parse, resolve } from 'path';
-import { PDFOptions } from 'puppeteer';
+import { parse, resolve } from 'node:path';
+import { type PDFOptions } from 'puppeteer';
 
 /**
  * Get the directory that a file is in.

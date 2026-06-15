@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs } from 'node:fs';
 
 /**
  * Read a file with the given encoding, and return its content as a string.
