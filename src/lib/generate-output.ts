@@ -104,7 +104,8 @@ export async function generateOutput(
 		outputFileContent = await page.content();
 	} else {
 		await page.emulateMediaType(config.page_media_type);
-		outputFileContent = await page.pdf(config.pdf_options);
+		// Puppeteer >=22 returns a Uint8Array from page.pdf(); wrap it to keep the public `content: Buffer` API.
+		outputFileContent = Buffer.from(await page.pdf(config.pdf_options));
 	}
 
 	await page.close();
