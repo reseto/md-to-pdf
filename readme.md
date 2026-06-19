@@ -1,300 +1,308 @@
-# Markdown to PDF
+# md-to-pdf
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/simonhaenisch/md-to-pdf/main.yml?label=CI)](https://github.com/simonhaenisch/md-to-pdf/actions?query=branch%3Amaster)
-[![NPM version](https://img.shields.io/npm/v/md-to-pdf.svg)](https://www.npmjs.com/md-to-pdf)
+> Markdown → PDF via headless Chrome. Syntax highlighting, Mermaid diagrams, callout boxes, auto TOC, footnotes, custom fonts, headers/footers, watch mode, programmatic API.
 
-![Screenshot of markdown file and resulting PDF](https://files-iiiuxybjc.now.sh)
+## Features
 
-**A simple and hackable CLI tool for converting markdown to pdf**. It uses [Marked](https://github.com/markedjs/marked) to convert `markdown` to `html` and [Puppeteer](https://github.com/GoogleChrome/puppeteer) (headless Chromium) to further convert the `html` to `pdf`. It also uses [highlight.js](https://github.com/isagalaev/highlight.js) for code highlighting. The whole source code of this tool is ~only \~250 lines of JS~ ~500 lines of Typescript and ~100 lines of CSS, so it is easy to clone and customize.
+- **Mermaid diagrams** — fenced ` ```mermaid ``` ` blocks render as diagrams (mermaid.js from CDN, requires internet)
+- **Callout boxes** — blockquotes render as styled boxes; blockquotes containing `⚠`, `warning`, `caution`, `danger`, or `attention` use an orange warning style
+- **Auto Table of Contents** — generated automatically when the document has ≥ 4 `##`/`###` headings
+- **Footnotes** — `[^1]` syntax with backlinks, collected at the bottom of the document
+- **Custom font** — `--font-family` or `font_family` config option; supports Google Fonts via `@import`
+- **Syntax highlighting** — code blocks highlighted via highlight.js (default: `github` theme)
+- **Headers & footers** — via Puppeteer's `headerTemplate`/`footerTemplate` pdf options
+- **Page breaks** — `<div class="page-break"></div>`
+- **Watch mode** — re-render on file change
+- **Programmatic API** — use as a Node.js library
+- **stdio support** — pipe markdown in, pipe PDF out
+- **Front-matter config** — per-file options via YAML front-matter
+- **Config file** — shared config via `.json` or `.js`
 
-**Highlights:**
+## Requirements
 
-- Concurrently convert multiple Markdown files
-- Watch mode
-- Use your own or remote stylesheets/scripts
-- Front-matter for configuration
-- Headers and Footers
-- Page Breaks
-- Syntax highlighting in code blocks
-- Extend the options of the underlying tools
-- Programmatic API
-- Supports `stdio`
-- Convert HTML (or [inline HTML](https://daringfireball.net/projects/markdown/syntax#html)) to PDF
+| Tool | Version | For |
+|---|---|---|
+| Node.js / Bun | 18+ | running the engine |
+| Internet access | — | Mermaid diagrams (CDN) |
 
-## Installation
-
-**Option 1: Bun**
+## Install
 
 ```sh
 bun i -g md-to-pdf
 ```
 
-**Option 2: Git**
-
-If you want to have your own copy to hack around with, clone the repository instead:
+Or clone for local development:
 
 ```sh
-git clone "https://github.com/simonhaenisch/md-to-pdf"
+git clone https://github.com/simonhaenisch/md-to-pdf
 cd md-to-pdf
-bun link # or bun i -g
+bun install
+bun link
 ```
-
-Then the commands `md-to-pdf` and `md2pdf` (as a shorthand) will be globally available in your cli. Use `bun start` to start the TypeScript compiler (`tsc`) in watch mode.
-
-## Update
-
-If you installed via bun, run `bun i -g md-to-pdf@latest` in your CLI. If you cloned this repository instead, you can simply do a `git pull` to get the latest changes from the master branch, then do `bun run build` to re-build. Unless there have been changes to packages (i. e. `bun.lock`), you don't need to re-install the package (because globally linked packages use symlinks, at least on Unix systems).
 
 ## Usage
 
-```
-$ md-to-pdf [options] path/to/file.md
-
-Options:
-
-  -h, --help ............... Output usage information
-  -v, --version ............ Output version
-  -w, --watch .............. Watch the current file(s) for changes
-  --watch-options .......... Options for Chokidar's watch call
-  --basedir ................ Base directory to be served by the file server
-  --stylesheet ............. Path to a local or remote stylesheet (can be passed multiple times)
-  --css .................... String of styles
-  --document-title ......... Name of the HTML Document.
-  --body-class ............. Classes to be added to the body tag (can be passed multiple times)
-  --page-media-type ........ Media type to emulate the page with (default: screen)
-  --highlight-style ........ Style to be used by highlight.js (default: github)
-  --marked-options ......... Set custom options for marked (as a JSON string)
-  --pdf-options ............ Set custom options for the generated PDF (as a JSON string)
-  --launch-options ......... Set custom launch options for Puppeteer
-  --gray-matter-options .... Set custom options for gray-matter
-  --port ................... Set the port to run the http server on
-  --md-file-encoding ....... Set the file encoding for the markdown file
-  --stylesheet-encoding .... Set the file encoding for the stylesheet
-  --as-html ................ Output as HTML instead
-  --config-file ............ Path to a JSON or JS configuration file
-  --devtools ............... Open the browser with devtools instead of creating PDF
+```sh
+md-to-pdf path/to/file.md
 ```
 
-The pdf is generated into the same directory as the source file and uses the same filename (with `.pdf` extension) by default. Multiple files can be specified by using shell globbing, e. g.:
+Output is written next to the source file as `file.pdf`.
+
+### Batch conversion
 
 ```sh
 md-to-pdf ./**/*.md
 ```
 
-_(If you use bash, you might need to enable the `globstar` shell option to make recursive globbing work.)_
-
-Alternatively, you can pipe the markdown in from `stdin` and redirect its `stdout` into a target file:
+### Pipe from stdin
 
 ```sh
-cat file.md | md-to-pdf > path/to/output.pdf
+cat file.md | md-to-pdf > output.pdf
+cat file1.md file2.md | md-to-pdf > combined.pdf
 ```
 
-_Tip: You can concatenate multiple files using `cat file1.md file2.md`._
+### Custom output path
 
-The current working directory (`process.cwd()`) serves as the base directory of the file server by default. This can be adjusted with the `--basedir` flag (or equivalent config option). Note that because of the file server, if you convert a file that's outside the current folder, you'll have to move the base directory up as well (e. g. `md-to-pdf ../path/to/file.md --basedir ..`).
+Set via `--dest` flag or front-matter `dest:`.
 
-#### Watch Mode
+### Watch mode
 
-Watch mode (`--watch`) uses Chokidar's `watch` method on the markdown file. If you're having issues, you can adjust the watch options via the config (`watch_options`) or `--watch-options` CLI arg. The `awaitWriteFinish` option might be particularly useful if you use editor plugins (e. g. TOC generators) that modify and save the file after the initial save. Check out the [Chokidar docs](https://github.com/paulmillr/chokidar#api) for a full list of options.
-
-Note that Preview on macOS does not automatically reload the preview when the file has changed (or at least not reliably). There are PDF viewers available that can check for file changes and offer auto-reload (e. g. [Skim](https://skim-app.sourceforge.io/)'s "Sync" feature).
-
-#### Programmatic API
-
-The programmatic API is very simple: it only exposes one function that accepts either a `path` to or `content` of a markdown file, and an optional config object (which can be used to specify the output file destination).
-
-```js
-const fs = require('fs');
-const { mdToPdf } = require('md-to-pdf');
-
-(async () => {
-	const pdf = await mdToPdf({ path: 'readme.md' }).catch(console.error);
-
-	if (pdf) {
-		fs.writeFileSync(pdf.filename, pdf.content);
-	}
-})();
+```sh
+md-to-pdf file.md --watch
 ```
 
-The function throws an error if anything goes wrong, which can be handled by catching the rejected promise. If you set the `dest` option in the config, the file will be written to the specified location straight away:
+Uses [Chokidar](https://github.com/paulmillr/chokidar). If editor plugins trigger extra saves after your initial save, use `awaitWriteFinish`:
 
-```js
-await mdToPdf({ content: '# Hello, World' }, { dest: 'path/to/output.pdf' });
+```sh
+md-to-pdf file.md --watch --watch-options '{ "awaitWriteFinish": true }'
 ```
 
-#### Page Break
+## CLI Options
 
-Place an element with class `page-break` to force a page break at a certain point of the document (uses the CSS rule `page-break-after: always`), e. g.:
+```
+-h, --help               Output usage information
+-v, --version            Output version
+-w, --watch              Watch the current file(s) for changes
+--watch-options          Options for Chokidar's watch call (JSON)
+--basedir                Base directory served by the file server
+--stylesheet             Path to a local or remote stylesheet (repeatable)
+--css                    Inline CSS string
+--document-title         Name of the HTML document
+--body-class             Classes added to <body> (repeatable)
+--page-media-type        Media type to emulate (default: screen)
+--highlight-style        highlight.js theme (default: github)
+--font-family            CSS font-family for body text
+--marked-options         Options for Marked (JSON)
+--pdf-options            Options for Puppeteer PDF (JSON)
+--launch-options         Puppeteer launch options (JSON)
+--gray-matter-options    Options for gray-matter (JSON)
+--port                   Port for the local file server
+--md-file-encoding       Markdown file encoding (default: utf-8)
+--stylesheet-encoding    Stylesheet encoding (default: utf-8)
+--as-html                Output HTML instead of PDF
+--config-file            Path to a JSON or JS config file
+--devtools               Open browser with devtools (dev only)
+```
+
+## Markdown Features
+
+### Mermaid diagrams
+
+````markdown
+```mermaid
+flowchart TD
+    A --> B --> C
+```
+````
+
+Add a `height=` attribute to cap diagram height (prevents overflow across pages):
+
+````markdown
+```mermaid height=120mm
+sequenceDiagram
+    A->>B: Request
+    B-->>A: Response
+```
+````
+
+Accepted units: `mm`, `cm`, `px`, or `%` of usable page height. Requires internet access at render time.
+
+### Callout boxes
+
+Every blockquote renders as a styled callout box.
+
+```markdown
+> This is an informational callout.
+
+> ⚠ This is a warning callout (orange style).
+
+> Caution: also triggers warning style.
+```
+
+Warning keywords: `⚠`, `warning`, `caution`, `danger`, `attention` (case-insensitive).
+
+### Auto Table of Contents
+
+When the document has 4 or more `##`/`###` headings, a TOC is automatically inserted before the body. No configuration required. Heading anchors are injected automatically.
+
+### Footnotes
+
+```markdown
+This sentence has a footnote.[^1]
+
+[^1]: Footnote text with a backlink.
+```
+
+### Page breaks
 
 ```html
 <div class="page-break"></div>
 ```
 
-#### Header/Footer
+### Headers and footers
 
-Use `headerTemplate` and `footerTemplate` of Puppeteer's [`page.pdf()` options](https://pptr.dev/api/puppeteer.pdfoptions/). If either of the two is set, then `displayHeaderFooter` will be enabled by default. It's possible to inject a few dynamic values like page numbers by using certain class names, as stated in the Puppeteer docs. Please note that for some reason the font-size defaults to 1pt, and you need to make sure to have enough page margin, otherwise your header/footer might be overlayed by your content. If you add a `<style/>` tag in either of the templates, it will be applied to both header and footer.
+Via front-matter `pdf_options`:
 
-Example markdown frontmatter config that prints the date in the header and the page number in the footer:
-
-```markdown
+```yaml
 ---
 pdf_options:
-  format: a4
-  margin: 30mm 20mm
+  format: A4
+  margin: 25mm 20mm
   printBackground: true
   headerTemplate: |-
-    <style>
-      section {
-        margin: 0 auto;
-        font-family: system-ui;
-        font-size: 11px;
-      }
-    </style>
-    <section>
-      <span class="title"></span>
-      <span class="date"></span>
-    </section>
+    <style>section { font-family: system-ui; font-size: 10px; margin: 0 auto; }</style>
+    <section><span class="title"></span> — <span class="date"></span></section>
   footerTemplate: |-
-    <section>
-      <div>
-        Page <span class="pageNumber"></span>
-        of <span class="totalPages"></span>
-      </div>
-    </section>
+    <section>Page <span class="pageNumber"></span> of <span class="totalPages"></span></section>
 ---
 ```
 
-Refer to the Puppeteer docs for more info about [header](https://pptr.dev/api/puppeteer.pdfoptions.headertemplate) and [footer](https://pptr.dev/api/puppeteer.pdfoptions.footertemplate) templates.
+Note: font-size in header/footer templates defaults to 1pt — always set it explicitly.
 
-#### Formulas
+## Configuration
 
-This can be achieved with [MathJax](https://www.mathjax.org/). A simple example can be found in [`/src/test/mathjax`](/src/test/mathjax).
+Options can be set (in increasing priority order): defaults → config file → front-matter → CLI flags.
 
-#### Default and Advanced Options
+Front-matter uses underscores instead of hyphens. Example:
 
-For default and advanced options see the following links. The default highlight.js styling for code blocks is `github`. The default PDF options are the A4 format and some margin (see `lib/config.ts` for the full default config).
-
-- [Marked Advanced Options](https://marked.js.org/using_advanced)
-- [Puppeteer PDF Options](https://pptr.dev/api/puppeteer.pdfoptions)
-- [Puppeteer Launch Options](https://pptr.dev/next/api/puppeteer.launchoptions)
-- [highlight.js Styles](https://github.com/highlightjs/highlight.js/tree/main/src/styles)
-
-## Options
-
-| Option                  | Examples                                                              |
-| ----------------------- | --------------------------------------------------------------------- |
-| `--basedir`             | `path/to/folder`                                                      |
-| `--stylesheet`          | `path/to/style.css`, `https://example.org/stylesheet.css`             |
-| `--css`                 | `body { color: tomato; }`                                             |
-| `--document-title`      | `Read me`                                                             |
-| `--body-class`          | `markdown-body`                                                       |
-| `--page-media-type`     | `print`                                                               |
-| `--highlight-style`     | `monokai`, `solarized-light`                                          |
-| `--marked-options`      | `'{ "gfm": false }'`                                                  |
-| `--pdf-options`         | `'{ "format": "Letter", "margin": "20mm", "printBackground": true }'` |
-| `--launch-options`      | `'{ "args": ["--no-sandbox"] }'`                                      |
-| `--gray-matter-options` | `null`                                                                |
-| `--port`                | `3000`                                                                |
-| `--md-file-encoding`    | `utf-8`, `windows1252`                                                |
-| `--stylesheet-encoding` | `utf-8`, `windows1252`                                                |
-| `--config-file`         | `path/to/config.json`                                                 |
-
-**`margin`:** instead of an object (as stated in the Puppeteer docs), it is also possible to pass a CSS-like string, e. g. `1em` (all), `1in 2in` (top/bottom right/left), `10mm 20mm 30mm` (top right/left bottom) or `1px 2px 3px 4px` (top right bottom left).
-
-**`highlight-style`:** if you set a highlight style with a background color, make sure that `"printBackground": true` is set in the pdf options.
-
-The options can also be set with front-matter or a config file (except `--md-file-encoding` can't be set by front-matter). In that case, remove the leading two hyphens (`--`) from the cli argument name and replace the hyphens (`-`) with underscores (`_`). `--stylesheet` and `--body-class` can be passed multiple times (i. e. to create an array). It's possible to set the output path for the PDF as `dest` in the config. If the same config option exists in multiple places, the priority (from low to high) is: defaults, config file, front-matter, cli arguments.
-
-The JS engine for front-matter is disabled by default for security reasons. You can enable it by overwriting the default gray-matter options (`--gray-matter-options null`, or `gray_matter_options: undefined` in the API).
-
-Example front-matter:
-
-```markdown
+```yaml
 ---
-dest: ./path/to/output.pdf
+dest: ./output/report.pdf
 stylesheet:
-  - path/to/style.css
+  - path/to/custom.css
 body_class: markdown-body
 highlight_style: monokai
+font_family: "Georgia, serif"
 pdf_options:
-  format: A5
-  margin: 10mm
+  format: A4
+  margin: 20mm
   printBackground: true
 ---
-
-# Content
 ```
 
-The config file can be a Javascript file that exports a config object, which gives you the full power of the eco-system (e. g. for advanced header/footer templates); or it can also be a `.json` if you like it simple.
-
-Example `config.js`:
+Config file (`--config-file path/to/config.js`):
 
 ```js
 module.exports = {
-	stylesheet: ['path/to/style.css', 'https://example.org/stylesheet.css'],
-	css: `body { color: tomato; }`,
-	body_class: 'markdown-body',
-	marked_options: {
-		headerIds: false,
-		smartypants: true,
-	},
-	pdf_options: {
-		format: 'A5',
-		margin: '20mm',
-		printBackground: true,
-	},
-	stylesheet_encoding: 'utf-8',
+  stylesheet: ['path/to/style.css'],
+  font_family: 'Georgia, serif',
+  highlight_style: 'monokai',
+  pdf_options: {
+    format: 'A4',
+    margin: '20mm',
+    printBackground: true,
+  },
 };
 ```
 
-Example `config.json`:
+### Font family
 
-```json
-{
-	"highlight_style": "monokai",
-	"body_class": ["dark", "content"]
-}
+Override the default `system-ui` font stack:
+
+```sh
+# System font
+md-to-pdf file.md --font-family "Georgia, serif"
+
+# Google Font (prefix with @import)
+md-to-pdf file.md --font-family "@import url('https://fonts.googleapis.com/css2?family=Inter'); Inter, sans-serif"
 ```
 
-#### Github Styles
+In front-matter:
 
-Here is an example front-matter for how to get Github-like output:
-
-```markdown
+```yaml
 ---
-stylesheet: https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css
-body_class: markdown-body
-css: |-
-  .page-break { page-break-after: always; }
-  .markdown-body { font-size: 11px; }
-  .markdown-body pre > code { white-space: pre-wrap; }
+font_family: "@import url('https://fonts.googleapis.com/css2?family=Inter'); Inter, sans-serif"
 ---
 ```
 
-## Security Considerations
+### Options reference
 
-### Local file server
+| Option | Example |
+|---|---|
+| `--basedir` | `path/to/folder` |
+| `--stylesheet` | `path/to/style.css`, `https://example.org/style.css` |
+| `--css` | `body { color: tomato; }` |
+| `--document-title` | `My Document` |
+| `--body-class` | `markdown-body` |
+| `--page-media-type` | `print` |
+| `--highlight-style` | `monokai`, `solarized-light` |
+| `--font-family` | `Georgia, serif` |
+| `--marked-options` | `'{ "gfm": false }'` |
+| `--pdf-options` | `'{ "format": "Letter", "margin": "20mm", "printBackground": true }'` |
+| `--launch-options` | `'{ "args": ["--no-sandbox"] }'` |
+| `--port` | `3000` |
+| `--md-file-encoding` | `utf-8`, `windows1252` |
+| `--stylesheet-encoding` | `utf-8`, `windows1252` |
+| `--config-file` | `path/to/config.json` |
 
-By default, this tool serves the current working directory via a http server on `localhost` on a relatively random port (or the port you specify), and that server gets shut down when the process exits (or as soon as it is killed). Please be aware that for the duration of the process this server will be accessible on your local network, and therefore all files within the served folder that the process has permission to read. So as a suggestion, maybe don't run this in watch mode in your system's root folder. 😉
+**`margin`** accepts CSS shorthand: `20mm` (all), `20mm 15mm` (top/bottom left/right), `10mm 20mm 30mm` (top left/right bottom), or `10mm 20mm 30mm 15mm` (top right bottom left).
 
-### Don't trust markdown content you don't control
+## Programmatic API
 
-If you intend to use this tool to convert user-provided markdown content, please be aware that - as always - you should sanitize it before processing it with `md-to-pdf`.
+```js
+const fs = require('fs');
+const { mdToPdf } = require('md-to-pdf');
 
-## Customization/Development
+// From file path
+const pdf = await mdToPdf({ path: 'file.md' });
+if (pdf) fs.writeFileSync(pdf.filename, pdf.content);
 
-After cloning and linking/installing globally (`bun link`), just run the transpiler in watch mode (`bun start`). Then you can start making changes to the files and Typescript will transpile them on save. Globally linked packages use symlinks, so all changes are reflected immediately without needing to re-install the package (except when there have been changes to required packages, then re-install using `bun i`). This also means that you can just do a `git pull` to get the latest version onto your machine.
+// From string, with output path
+await mdToPdf({ content: '# Hello, World' }, { dest: 'output.pdf' });
+```
 
-Ideas, feature requests and PRs are welcome. Just keep it simple! 🤓
+## Merging multiple files
 
-## Credits
+Use `qpdf` (or `ghostscript`) to merge separately converted PDFs:
 
-I want to thank the following people:
+```sh
+md-to-pdf chapter1.md
+md-to-pdf chapter2.md
+qpdf --empty --pages chapter1.pdf chapter2.pdf -- manual.pdf
+```
 
-- [imcvampire](https://github.com/imcvampire) for handing over the npm package name.
-- [Sindre Sorhus](https://github.com/sindresorhus) and [Vercel](https://github.com/vercel) (formerly _Zeit_) for inspiration on how to write CLI tools.
-- [Josh Bruce](https://github.com/joshbruce) for [reviving Marked](https://github.com/markedjs/marked/issues/1106).
+## Security
+
+**Local file server:** The tool starts an HTTP server on localhost for the duration of the conversion. It serves the current working directory (or `--basedir`). The server is accessible on your local network while running — avoid running in watch mode from sensitive directories.
+
+**Untrusted markdown:** Sanitize user-provided content before passing it to `md-to-pdf`. Markdown can contain arbitrary HTML.
+
+## Development
+
+```sh
+git clone https://github.com/simonhaenisch/md-to-pdf
+cd md-to-pdf
+bun install
+bun start   # tsc in watch mode
+bun link    # make md-to-pdf globally available
+```
+
+References:
+- [Marked options](https://marked.js.org/using_advanced)
+- [Puppeteer PDF options](https://pptr.dev/api/puppeteer.pdfoptions)
+- [Puppeteer launch options](https://pptr.dev/next/api/puppeteer.launchoptions)
+- [highlight.js themes](https://github.com/highlightjs/highlight.js/tree/main/src/styles)
 
 ## License
 
-[MIT](/license).
+[MIT](license) — © Simon Hänisch
