@@ -4,6 +4,10 @@ import { type marked } from 'marked';
 import { resolve } from 'node:path';
 import { type FrameAddScriptTagOptions, type launch, type PDFOptions } from 'puppeteer';
 
+// marked-footnote ships types for marked v5+; use require to skip its d.ts
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const footnoteExtension = (require('marked-footnote').default ?? require('marked-footnote')) as () => marked.MarkedExtension;
+
 export const defaultConfig: Config = {
 	basedir: process.cwd(),
 	stylesheet: [resolve(__dirname, '..', '..', 'markdown.css')],
@@ -37,7 +41,7 @@ export const defaultConfig: Config = {
 	stylesheet_encoding: 'utf-8',
 	as_html: false,
 	devtools: false,
-	marked_extensions: [],
+	marked_extensions: [footnoteExtension()],
 };
 
 /**

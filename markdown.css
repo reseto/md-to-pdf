@@ -55,10 +55,22 @@ p {
 
 blockquote {
 	margin: 0.5em 0 1em;
-	padding-left: 0.5em;
-	padding-right: 1em;
-	border-left: 4px solid gainsboro;
-	font-style: italic;
+	padding: 0.6em 1em 0.6em 1em;
+	border-left: 4px solid #4a90d9;
+	background-color: #f0f6ff;
+	border-radius: 0 4px 4px 0;
+	font-style: normal;
+	color: #1a1a2e;
+}
+
+blockquote.callout-warning {
+	border-left-color: #e07b00;
+	background-color: #fff8f0;
+	color: #3d2000;
+}
+
+blockquote p {
+	margin: 0.1em 0;
 }
 
 ul,
@@ -129,4 +141,65 @@ table tr {
 
 table tr:nth-child(2n) {
 	background-color: whitesmoke;
+}
+
+nav.toc {
+	background: #f8f9fa;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	padding: 0.75em 1.25em;
+	margin: 0 0 1.5em;
+	display: inline-block;
+	min-width: 200px;
+}
+
+nav.toc .toc-title {
+	font-size: 0.9em;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #555;
+	padding: 0;
+	margin: 0 0 0.4em;
+}
+
+nav.toc ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+nav.toc li {
+	line-height: 1.7;
+}
+
+nav.toc a {
+	color: #1a6bb5;
+	text-decoration: none;
+}
+
+nav.toc a:hover {
+	text-decoration: underline;
+}
+
+/* Footnotes (marked-footnote) */
+.footnotes {
+	margin-top: 2em;
+	padding-top: 1em;
+	border-top: 1px solid #ddd;
+	font-size: 0.875em;
+	color: #444;
+}
+
+.footnotes ol {
+	margin: 0;
+	padding-left: 1.5em;
+}
+
+sup a,
+.footnote-ref {
+	color: #1a6bb5;
+	text-decoration: none;
+	font-size: 0.8em;
+	vertical-align: super;
 }
