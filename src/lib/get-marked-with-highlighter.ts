@@ -11,13 +11,24 @@ const unescapeHtml = (html: string) =>
 		.replace(/&quot;/g, '"')
 		.replace(/&#39;/g, "'");
 
+export type HeadingEntry = { level: number; text: string; id: string };
+
+const slugify = (text: string) =>
+	text
+		.toLowerCase()
+		.replace(/[^\w\s-]/g, '')
+		.trim()
+		.replace(/\s+/g, '-');
+
 export const getMarked = (options: marked.MarkedOptions, extensions: marked.MarkedExtension[]) => {
+	const collectedHeadings: HeadingEntry[] = [];
+	const slugCount = new Map<string, number>();
+
 	const renderer = (options.renderer as Renderer | undefined) ?? new Renderer();
 
 	if (!Object.prototype.hasOwnProperty.call(renderer, 'code')) {
 		renderer.code = (code, language) => {
 			if (language && /\bmermaid\b/i.test(language)) {
-				// parse optional height attribute from info string, e.g. ```mermaid height=120mm
 				const heightMatch = language.match(/height=([\d.]+(?:mm|cm|%|px))/i);
 				const heightStyle = heightMatch ? ` style="max-height:${heightMatch[1]};width:auto;"` : '';
 				return `<div class="mermaid"${heightStyle}>${unescapeHtml(code)}</div>`;
@@ -35,6 +46,21 @@ export const getMarked = (options: marked.MarkedOptions, extensions: marked.Mark
 		};
 	}
 
+	if (!Object.prototype.hasOwnProperty.call(renderer, 'heading')) {
+		renderer.heading = (text, level, raw) => {
+			if (level === 2 || level === 3) {
+				const base = slugify(raw.replace(/<[^>]+>/g, ''));
+				const count = slugCount.get(base) ?? 0;
+				slugCount.set(base, count + 1);
+				const id = count === 0 ? base : `${base}-${count}`;
+				collectedHeadings.push({ level, text: text.replace(/<[^>]+>/g, ''), id });
+				return `<h${level} id="${id}">${text}</h${level}>\n`;
+			}
+
+			return `<h${level}>${text}</h${level}>\n`;
+		};
+	}
+
 	marked.setOptions({
 		renderer,
 		highlight(code, languageName) {
@@ -46,5 +72,12 @@ export const getMarked = (options: marked.MarkedOptions, extensions: marked.Mark
 		...options,
 	});
 	marked.use(...extensions);
-	return marked;
+
+	const parse = (md: string) => {
+		collectedHeadings.length = 0;
+		slugCount.clear();
+		return marked(md);
+	};
+
+	return { parse, headings: collectedHeadings };
 };
