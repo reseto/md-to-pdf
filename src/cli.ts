@@ -45,6 +45,7 @@ export const cliFlags = arg({
 	'--config-file': String,
 	'--devtools': Boolean,
 	'--font-family': String,
+	'--code-font-family': String,
 	'--toc': Boolean,
 	'--no-toc': Boolean,
 

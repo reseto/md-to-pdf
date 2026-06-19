@@ -43,6 +43,7 @@ export const defaultConfig: Config = {
 	devtools: false,
 	marked_extensions: [footnoteExtension()],
 	font_family: undefined,
+	code_font_family: undefined,
 	toc: undefined,
 };
 
@@ -187,6 +188,13 @@ type BasicConfig = {
 	 * Default: undefined (uses system-ui stack from markdown.css).
 	 */
 	font_family?: string;
+
+	/**
+	 * CSS font-family value for code blocks. Overrides the monospace default.
+	 * Can include a Google Fonts @import prefix.
+	 * Default: undefined (uses monospace from markdown.css).
+	 */
+	code_font_family?: string;
 
 	/**
 	 * Control Table of Contents generation.

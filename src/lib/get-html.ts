@@ -72,7 +72,14 @@ export const getHtml = (md: string, config: Config) => {
 		const hasImport = semicolon !== -1 && config.font_family.trimStart().startsWith('@');
 		const importLine = hasImport ? config.font_family.slice(0, semicolon + 1).trim() : '';
 		const familyValue = hasImport ? config.font_family.slice(semicolon + 1).trim() : config.font_family.trim();
-		fontStyle = `<style>${importLine} body { font-family: ${familyValue}; }</style>`;
+		fontStyle += `<style>${importLine} body { font-family: ${familyValue}; }</style>`;
+	}
+	if (config.code_font_family) {
+		const semicolon = config.code_font_family.indexOf(';');
+		const hasImport = semicolon !== -1 && config.code_font_family.trimStart().startsWith('@');
+		const importLine = hasImport ? config.code_font_family.slice(0, semicolon + 1).trim() : '';
+		const familyValue = hasImport ? config.code_font_family.slice(semicolon + 1).trim() : config.code_font_family.trim();
+		fontStyle += `<style>${importLine} pre, code, pre code { font-family: ${familyValue}; }</style>`;
 	}
 
 	return `<!DOCTYPE html>
