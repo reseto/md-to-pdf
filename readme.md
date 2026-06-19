@@ -1,14 +1,16 @@
 # md-to-pdf
 
-> Markdown → PDF via headless Chrome. Syntax highlighting, Mermaid diagrams, callout boxes, auto TOC, footnotes, custom fonts, headers/footers, watch mode, programmatic API.
+> Markdown → PDF via headless Chrome. Syntax highlighting, Mermaid diagrams, callout boxes, auto TOC, footnotes, custom fonts, page numbers, headers/footers, watch mode, programmatic API.
 
 ## Features
 
-- **Mermaid diagrams** — fenced ` ```mermaid ``` ` blocks render as diagrams (mermaid.js from CDN, requires internet)
-- **Callout boxes** — blockquotes render as styled boxes; blockquotes containing `⚠`, `warning`, `caution`, `danger`, or `attention` use an orange warning style
-- **Auto Table of Contents** — generated automatically when the document has ≥ 4 `##`/`###` headings
+- **Mermaid diagrams** — fenced ` ```mermaid ``` ` blocks render as diagrams; `height=` attribute caps diagram height
+- **Callout boxes** — blockquotes render as styled info boxes; `⚠`, `warning`, `caution`, `danger`, `attention` keywords trigger orange warning style
+- **Auto Table of Contents** — generated automatically at ≥ 4 `##`/`###` headings; controllable via `--toc` / `--no-toc`
 - **Footnotes** — `[^1]` syntax with backlinks, collected at the bottom of the document
-- **Custom font** — `--font-family` or `font_family` config option; supports Google Fonts via `@import`
+- **Custom body font** — `--font-family`; supports Google Fonts via `@import` prefix
+- **Custom code font** — `--code-font-family`; overrides monospace font for code blocks independently
+- **Page numbers** — `--page-numbers` injects a default "Page N of M" footer without manual template HTML
 - **Syntax highlighting** — code blocks highlighted via highlight.js (default: `github` theme)
 - **Headers & footers** — via Puppeteer's `headerTemplate`/`footerTemplate` pdf options
 - **Page breaks** — `<div class="page-break"></div>`
@@ -92,6 +94,10 @@ md-to-pdf file.md --watch --watch-options '{ "awaitWriteFinish": true }'
 --page-media-type        Media type to emulate (default: screen)
 --highlight-style        highlight.js theme (default: github)
 --font-family            CSS font-family for body text
+--code-font-family       CSS font-family for code blocks
+--toc                    Force Table of Contents generation
+--no-toc                 Suppress Table of Contents generation
+--page-numbers           Add "Page N of M" footer to every page
 --marked-options         Options for Marked (JSON)
 --pdf-options            Options for Puppeteer PDF (JSON)
 --launch-options         Puppeteer launch options (JSON)
@@ -143,7 +149,16 @@ Warning keywords: `⚠`, `warning`, `caution`, `danger`, `attention` (case-insen
 
 ### Auto Table of Contents
 
-When the document has 4 or more `##`/`###` headings, a TOC is automatically inserted before the body. No configuration required. Heading anchors are injected automatically.
+When the document has 4 or more `##`/`###` headings, a TOC is automatically inserted before the body. Heading anchors are injected automatically.
+
+Override auto-detection:
+
+```sh
+md-to-pdf file.md --toc       # force TOC regardless of heading count
+md-to-pdf file.md --no-toc    # suppress TOC always
+```
+
+Or via front-matter: `toc: true` / `toc: false`.
 
 ### Footnotes
 
@@ -152,6 +167,16 @@ This sentence has a footnote.[^1]
 
 [^1]: Footnote text with a backlink.
 ```
+
+### Page numbers
+
+```sh
+md-to-pdf file.md --page-numbers
+```
+
+Injects a centered "Page N of M" footer on every page. Ignored if `footerTemplate` is already set in `pdf_options`.
+
+Via front-matter: `page_numbers: true`.
 
 ### Page breaks
 
@@ -193,6 +218,9 @@ stylesheet:
 body_class: markdown-body
 highlight_style: monokai
 font_family: "Georgia, serif"
+code_font_family: "JetBrains Mono, monospace"
+toc: true
+page_numbers: true
 pdf_options:
   format: A4
   margin: 20mm
@@ -206,7 +234,9 @@ Config file (`--config-file path/to/config.js`):
 module.exports = {
   stylesheet: ['path/to/style.css'],
   font_family: 'Georgia, serif',
+  code_font_family: 'JetBrains Mono, monospace',
   highlight_style: 'monokai',
+  page_numbers: true,
   pdf_options: {
     format: 'A4',
     margin: '20mm',
@@ -227,11 +257,21 @@ md-to-pdf file.md --font-family "Georgia, serif"
 md-to-pdf file.md --font-family "@import url('https://fonts.googleapis.com/css2?family=Inter'); Inter, sans-serif"
 ```
 
+Override the default `monospace` font for code blocks:
+
+```sh
+md-to-pdf file.md --code-font-family "JetBrains Mono, monospace"
+
+# Google Font
+md-to-pdf file.md --code-font-family "@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono'); JetBrains Mono, monospace"
+```
+
 In front-matter:
 
 ```yaml
 ---
 font_family: "@import url('https://fonts.googleapis.com/css2?family=Inter'); Inter, sans-serif"
+code_font_family: "JetBrains Mono, monospace"
 ---
 ```
 
@@ -247,6 +287,10 @@ font_family: "@import url('https://fonts.googleapis.com/css2?family=Inter'); Int
 | `--page-media-type` | `print` |
 | `--highlight-style` | `monokai`, `solarized-light` |
 | `--font-family` | `Georgia, serif` |
+| `--code-font-family` | `JetBrains Mono, monospace` |
+| `--toc` | _(flag, no value)_ |
+| `--no-toc` | _(flag, no value)_ |
+| `--page-numbers` | _(flag, no value)_ |
 | `--marked-options` | `'{ "gfm": false }'` |
 | `--pdf-options` | `'{ "format": "Letter", "margin": "20mm", "printBackground": true }'` |
 | `--launch-options` | `'{ "args": ["--no-sandbox"] }'` |
