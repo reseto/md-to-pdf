@@ -48,6 +48,7 @@ export const cliFlags = arg({
 	'--code-font-family': String,
 	'--toc': Boolean,
 	'--no-toc': Boolean,
+	'--page-numbers': Boolean,
 
 	// aliases
 	'-h': '--help',

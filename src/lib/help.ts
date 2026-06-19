@@ -30,6 +30,7 @@ const helpText = `
     --code-font-family ${chalk.dim('.......')} CSS font-family for code blocks (e.g. "JetBrains Mono, monospace")
     --toc ${chalk.dim('...................')} Force Table of Contents generation
     --no-toc ${chalk.dim('................')} Suppress Table of Contents generation
+    --page-numbers ${chalk.dim('...........')} Add "Page N of M" footer to every page
 
   ${chalk.dim.underline.bold('Examples:')}
 

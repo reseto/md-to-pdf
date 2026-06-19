@@ -45,6 +45,7 @@ export const defaultConfig: Config = {
 	font_family: undefined,
 	code_font_family: undefined,
 	toc: undefined,
+	page_numbers: false,
 };
 
 /**
@@ -201,6 +202,13 @@ type BasicConfig = {
 	 * true = always generate TOC, false = never, undefined = auto (≥4 headings).
 	 */
 	toc?: boolean;
+
+	/**
+	 * When true, injects a default footer with "Page N of M" page numbers.
+	 * Ignored if footerTemplate is already set in pdf_options.
+	 * Default: false.
+	 */
+	page_numbers?: boolean;
 };
 
 export type PuppeteerLaunchOptions = Parameters<typeof launch>[0];

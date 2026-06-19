@@ -52,6 +52,20 @@ export const convertMdToPdf = async (
 		config.pdf_options.displayHeaderFooter = true;
 	}
 
+	// page_numbers shorthand: inject default footer unless footerTemplate is already set
+	if (config.page_numbers && !config.pdf_options.footerTemplate) {
+		config.pdf_options.footerTemplate =
+			'<style>section{font-family:system-ui;font-size:10px;width:100%;text-align:center;color:#666;}</style>' +
+			'<section>Page <span class="pageNumber"></span> of <span class="totalPages"></span></section>';
+		config.pdf_options.displayHeaderFooter = true;
+		// ensure bottom margin is large enough for the footer
+		if (!config.pdf_options.margin) {
+			config.pdf_options.margin = { top: '30mm', right: '40mm', bottom: '20mm', left: '20mm' };
+		} else if (typeof config.pdf_options.margin === 'object' && !config.pdf_options.margin.bottom) {
+			config.pdf_options.margin.bottom = '20mm';
+		}
+	}
+
 	const arrayOptions = ['body_class', 'script', 'stylesheet'] as const;
 
 	// sanitize frontmatter array options
