@@ -64,9 +64,20 @@ export const getHtml = (md: string, config: Config) => {
 	const [toc, body] = buildToc(raw);
 	const hasMermaid = body.includes('<div class="mermaid">');
 
+	// font_family may include a leading @import line, e.g.:
+	// "@import url('https://fonts.googleapis.com/css2?family=Inter'); Inter, sans-serif"
+	let fontStyle = '';
+	if (config.font_family) {
+		const semicolon = config.font_family.indexOf(';');
+		const hasImport = semicolon !== -1 && config.font_family.trimStart().startsWith('@');
+		const importLine = hasImport ? config.font_family.slice(0, semicolon + 1).trim() : '';
+		const familyValue = hasImport ? config.font_family.slice(semicolon + 1).trim() : config.font_family.trim();
+		fontStyle = `<style>${importLine} body { font-family: ${familyValue}; }</style>`;
+	}
+
 	return `<!DOCTYPE html>
 <html>
-	<head><title>${config.document_title}</title><meta charset="utf-8">${hasMermaid ? '\n\t' + mermaidScript : ''}</head>
+	<head><title>${config.document_title}</title><meta charset="utf-8">${hasMermaid ? '\n\t' + mermaidScript : ''}${fontStyle ? '\n\t' + fontStyle : ''}</head>
 	<body class="${config.body_class.join(' ')}">
 		${toc}${body}
 	</body>

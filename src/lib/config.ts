@@ -42,6 +42,7 @@ export const defaultConfig: Config = {
 	as_html: false,
 	devtools: false,
 	marked_extensions: [footnoteExtension()],
+	font_family: undefined,
 };
 
 /**
@@ -177,6 +178,14 @@ type BasicConfig = {
 	 * @see https://marked.js.org/using_pro#extensions
 	 */
 	marked_extensions: marked.MarkedExtension[];
+
+	/**
+	 * CSS font-family value for body text. Overrides the system-ui default.
+	 * Can include a Google Fonts @import as a prefix, e.g.:
+	 *   "@import url('https://fonts.googleapis.com/css2?family=Inter'); Inter, sans-serif"
+	 * Default: undefined (uses system-ui stack from markdown.css).
+	 */
+	font_family?: string;
 };
 
 export type PuppeteerLaunchOptions = Parameters<typeof launch>[0];
