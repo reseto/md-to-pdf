@@ -76,6 +76,13 @@ export const convertMdToPdf = async (
 		config.pdf_options.margin = getMarginObject(config.pdf_options.margin);
 	}
 
+	// --no-toc takes priority over --toc
+	if (args['--no-toc']) {
+		config.toc = false;
+	} else if (args['--toc']) {
+		config.toc = true;
+	}
+
 	// set output destination
 	if (config.dest === undefined) {
 		config.dest = 'path' in input ? getOutputFilePath(input.path, config.as_html ? 'html' : 'pdf') : 'stdout';

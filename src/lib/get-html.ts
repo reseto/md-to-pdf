@@ -14,9 +14,9 @@ const slugify = (text: string) =>
 /**
  * Extracts h2/h3 headings from rendered HTML and builds a TOC.
  * Injects id anchors into the headings and returns [toc, body].
- * Returns ['', body] when fewer than 4 headings found.
+ * toc param: true=always, false=never, undefined=auto (≥4 headings).
  */
-const buildToc = (html: string): [string, string] => {
+const buildToc = (html: string, showToc?: boolean): [string, string] => {
 	const headingRe = /<(h[23])>(.*?)<\/h[23]>/gi;
 	const entries: Array<{ level: string; text: string; slug: string }> = [];
 	const slugCount = new Map<string, number>();
@@ -32,7 +32,7 @@ const buildToc = (html: string): [string, string] => {
 		entries.push({ level: match[1] ?? 'h2', text, slug });
 	}
 
-	if (entries.length < 4) return ['', html];
+	if (showToc === false || (showToc === undefined && entries.length < 4)) return ['', html];
 
 	// inject id attributes into headings
 	const slugIdx = new Map<string, number>();
@@ -61,7 +61,7 @@ const buildToc = (html: string): [string, string] => {
  */
 export const getHtml = (md: string, config: Config) => {
 	const raw = getMarked(config.marked_options, config.marked_extensions)(md);
-	const [toc, body] = buildToc(raw);
+	const [tocHtml, body] = buildToc(raw, config.toc);
 	const hasMermaid = body.includes('<div class="mermaid">');
 
 	// font_family may include a leading @import line, e.g.:
@@ -79,7 +79,7 @@ export const getHtml = (md: string, config: Config) => {
 <html>
 	<head><title>${config.document_title}</title><meta charset="utf-8">${hasMermaid ? '\n\t' + mermaidScript : ''}${fontStyle ? '\n\t' + fontStyle : ''}</head>
 	<body class="${config.body_class.join(' ')}">
-		${toc}${body}
+		${tocHtml}${body}
 	</body>
 </html>
 `;

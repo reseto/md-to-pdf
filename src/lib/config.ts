@@ -43,6 +43,7 @@ export const defaultConfig: Config = {
 	devtools: false,
 	marked_extensions: [footnoteExtension()],
 	font_family: undefined,
+	toc: undefined,
 };
 
 /**
@@ -186,6 +187,12 @@ type BasicConfig = {
 	 * Default: undefined (uses system-ui stack from markdown.css).
 	 */
 	font_family?: string;
+
+	/**
+	 * Control Table of Contents generation.
+	 * true = always generate TOC, false = never, undefined = auto (≥4 headings).
+	 */
+	toc?: boolean;
 };
 
 export type PuppeteerLaunchOptions = Parameters<typeof launch>[0];

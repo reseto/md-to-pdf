@@ -27,6 +27,8 @@ const helpText = `
     --config-file ${chalk.dim('............')} Path to a JSON or JS configuration file
     --devtools ${chalk.dim('...............')} Open the browser with devtools instead of creating PDF
     --font-family ${chalk.dim('............')} CSS font-family for body text (e.g. "Georgia, serif")
+    --toc ${chalk.dim('...................')} Force Table of Contents generation
+    --no-toc ${chalk.dim('................')} Suppress Table of Contents generation
 
   ${chalk.dim.underline.bold('Examples:')}
 
